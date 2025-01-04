@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: API-Gateway
+
+
+  # API gateway configs
+  cloud:
+    gateway:
+      routes:
+        - id: Order-Service
+          uri: lb://ORDER-SERVICE
+          predicates:
+            - Path=/api/v1/orders/**
+          filters:
+            - StripPrefix=2
+#            - RedirectTo= 302, https://www.youtube.com
+
+        - id: Inventory-Service
+          uri: lb://INVENTORY-SERVICE
+          predicates:
+            - Path=/api/v1/inventory/**
+          filters:
+            - StripPrefix=2
+
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+  register-with-eureka: true
+  fetch-registry: true
+
+
+  # Filters: StripPrefix means path er age ki ki add korechi aeikhane 2to jinish ache api/v1/ jate aei 2to ke dhore ney, oi jonnoi use kora
