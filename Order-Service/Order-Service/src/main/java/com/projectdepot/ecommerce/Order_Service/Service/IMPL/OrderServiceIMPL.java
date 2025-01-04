@@ -42,8 +42,9 @@ public class OrderServiceIMPL implements OrderService {
     }
 
     @Override
-    @Retry(name = "", fallbackMethod = "")
+    @Retry(name = "inventoryRetry", fallbackMethod = "createOrderFallback")
     public OrderRequestDTO createOrder(OrderRequestDTO orderRequestDTO) {
+        log.info("Creating order: {}", orderRequestDTO);
         Double totalPrice = inventoryFeignClients.reduceStocks(orderRequestDTO);
 
         Orders order = modelMapper.map(orderRequestDTO, Orders.class);
@@ -57,6 +58,13 @@ public class OrderServiceIMPL implements OrderService {
 
         Orders saveOrder = orderRepository.save(order);
         return modelMapper.map(saveOrder, OrderRequestDTO.class);
+    }
+
+    public OrderRequestDTO createOrderFallback(OrderRequestDTO orderRequestDTO, Throwable throwable) {
+        log.error("Failed to create order: {}", throwable.getMessage());
+
+        // this is dummy data
+        return new OrderRequestDTO();
     }
 
     @Override
