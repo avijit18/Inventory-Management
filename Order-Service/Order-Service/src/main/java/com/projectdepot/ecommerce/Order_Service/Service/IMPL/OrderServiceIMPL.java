@@ -1,12 +1,16 @@
 package com.projectdepot.ecommerce.Order_Service.Service.IMPL;
 
+import com.projectdepot.Shipping_Service.Entity.Shipping;
 import com.projectdepot.ecommerce.Order_Service.Clients.InventoryFeignClients;
+import com.projectdepot.ecommerce.Order_Service.Clients.ShippingFeignClients;
 import com.projectdepot.ecommerce.Order_Service.DTOs.OrderRequestDTO;
 import com.projectdepot.ecommerce.Order_Service.Entities.Enum.OrderStatus;
 import com.projectdepot.ecommerce.Order_Service.Entities.OrderItem;
 import com.projectdepot.ecommerce.Order_Service.Entities.Orders;
 import com.projectdepot.ecommerce.Order_Service.Repository.OrderRepository;
 import com.projectdepot.ecommerce.Order_Service.Service.OrderService;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +29,7 @@ public class OrderServiceIMPL implements OrderService {
     private final ModelMapper modelMapper;
 
     private final InventoryFeignClients inventoryFeignClients;
+    private final ShippingFeignClients shippingFeignClients;
 
 
     @Override
@@ -42,7 +47,9 @@ public class OrderServiceIMPL implements OrderService {
     }
 
     @Override
-    @Retry(name = "inventoryRetry", fallbackMethod = "createOrderFallback")
+//    @Retry(name = "inventoryRetry", fallbackMethod = "createOrderFallback")
+//    @RateLimiter(name = "inventoryRateLimiter", fallbackMethod = "createOrderFallback")
+    @CircuitBreaker(name = "inventoryCircuitBreaker", fallbackMethod = "createOrderFallback")
     public OrderRequestDTO createOrder(OrderRequestDTO orderRequestDTO) {
         log.info("Creating order: {}", orderRequestDTO);
         Double totalPrice = inventoryFeignClients.reduceStocks(orderRequestDTO);
@@ -57,6 +64,10 @@ public class OrderServiceIMPL implements OrderService {
         order.setOrderStatus(OrderStatus.CONFIRMED);
 
         Orders saveOrder = orderRepository.save(order);
+
+        // Confirm shipping via shipping service
+        Shipping shipping = shippingFeignClients.confirmShipping(saveOrder.getId());
+        log.info("Shipping confirmed: {}", shipping);
         return modelMapper.map(saveOrder, OrderRequestDTO.class);
     }
 
@@ -86,4 +97,6 @@ public class OrderServiceIMPL implements OrderService {
 
         return "Order with ID: " + orderId + " has been cancelled successfully, and stocks are restored.";
     }
+
+
 }
