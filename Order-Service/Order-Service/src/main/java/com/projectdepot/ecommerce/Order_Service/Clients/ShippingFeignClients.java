@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 @FeignClient(name = "Shipping-Service", path = "/shipping")
 public interface ShippingFeignClients {
 
-    @PostMapping("/confirm/{orderId}")
+    @PostMapping("/status/confirm/{orderId}")
     Shipping confirmShipping(@PathVariable("orderId") Long orderId);
 
-    @PostMapping("/cancel/{orderId}")
+    @PostMapping("/status/cancel/{orderId}")
     String cancelShipping(@PathVariable("orderId") Long orderId);
 }

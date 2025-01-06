@@ -25,7 +25,7 @@ spring:
         - id: Shipping-Service
           uri: lb://SHIPPING-SERVICE
           predicates:
-            - Path= api/v1/shipping/**
+            - Path= /api/v1/shipping/**
           filters:
             - StripPrefix=2
 

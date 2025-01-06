@@ -11,5 +11,4 @@ public class OrderRequestDTO {
     private Long id;
     private List<OrderRequestItemDTO> items;
     private BigDecimal totalPrice;
-    private String orderStatus;
 }
