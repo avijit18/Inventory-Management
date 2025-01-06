@@ -1,3 +1,6 @@
+jwt:
+  secretKey: ads9f55ddvdv2265456dvsg934633dsvgg411396f987412sdfgvscXCQAFGBDN7987WEFG4fdgbbffhth6745j6rt4HGTH665648575VDFsfgerhrbnrfjtnrfn
+
 spring:
   application:
     name: API-Gateway
@@ -14,6 +17,8 @@ spring:
           filters:
             - StripPrefix=2
 #            - RedirectTo= 302, https://www.youtube.com
+            - name: CustomGatewayFilters
+            - name: AuthenticationFilter
 
         - id: Inventory-Service
           uri: lb://INVENTORY-SERVICE
@@ -21,6 +26,8 @@ spring:
             - Path=/api/v1/inventory/**
           filters:
             - StripPrefix=2
+            - name: CustomGatewayFilters
+            - name: AuthenticationFilter
 
         - id: Shipping-Service
           uri: lb://SHIPPING-SERVICE

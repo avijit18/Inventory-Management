@@ -22,8 +22,8 @@ public class OrderController {
 
     // Service Discovery using Dummy API
     @GetMapping("/helloOrderService")
-    public String helloOrderService() {
-        return "Hello from Order Service using Netflix Eureka....";
+    public String helloOrderService(@RequestHeader("X-user-ID") Long userID) {
+        return "Hello from Order Service using Netflix Eureka. user id is" + userID;
     }
 
     @PostMapping("/create-order")
